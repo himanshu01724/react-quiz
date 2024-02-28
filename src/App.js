@@ -8,7 +8,11 @@ import StartScreen from './Components/StartScreen'
 import Question from './Components/Question'
 import NextButton from './Components/NextButton'
 import Progress from './Components/Progress'
+import Finished from './Components/Finished'
+import Footer from './Components/Footer'
+import Timer from './Components/Timer'
 
+const TIME_FOR_QUESTION = 30;
 
 const initialState = {
     questions:[],
@@ -16,6 +20,8 @@ const initialState = {
     index:0,
     answer:null,
     points:0,
+    highscore:0,
+    secondsRemaining:null,
 
 }
 
@@ -26,7 +32,7 @@ function reducer(state, action){
         case('dataFailed'):
             return {...state, status:'error'}
         case('showQuiz'):
-            return {...state, status:'active'}
+            return {...state, status:'active', secondsRemaining:state.questions.length*TIME_FOR_QUESTION}
         case('answer'):
             const question = state.questions.at(state.index)
             return {...state, answer:action.payload, points:
@@ -37,6 +43,17 @@ function reducer(state, action){
         case('updateIndex'):
             const len = state.questions.length
             return {...state, index:state.index <=len ? state.index + 1:state.index, answer:null}
+        case('final'):
+            return {...state, status:'finished', highscore: state.points > state.highscore ? 
+                                                                           state.points :
+                                                                           state.highscore}
+        case('restart'):
+            return {...initialState, status:'active', questions:state.questions }      
+        
+        case('timeout'):
+            return {...state, secondsRemaining:state.secondsRemaining-1,
+                              status:state.secondsRemaining === 0 ? 'finished':state.status}
+        
         default:
             throw new Error('Unwanted Action')
     }
@@ -45,7 +62,7 @@ function reducer(state, action){
 export default function App(){
 
 const [state, dispatch] = useReducer(reducer, initialState)
-const {questions, status, index, answer, points} = state
+const {questions, status, index, answer, points, highscore, secondsRemaining} = state
 
 const numQuestions = questions.length;
 
@@ -78,18 +95,33 @@ async function fetchquestions(){
                 {status === 'error'   &&  <Error/>}
                 {status === 'ready' && <StartScreen questions={numQuestions}
                                                     dispatch = {dispatch}/>}
-                {status === 'active' && (<>
+                {status === 'active' && (
+                <>
                 <Progress index = {index} 
                           numQuestions={numQuestions} 
                           points={points}
                           answer = {answer}
                 />
                 <Question question = {questions[index]} 
-                dispatch = {dispatch}
-                answer = {answer}
+                          dispatch = {dispatch}
+                          answer = {answer}
                 />
-                <NextButton dispatch={dispatch} answer = {answer}/>
-                                        </>         )}
+                <Footer>
+                <NextButton dispatch={dispatch} 
+                            answer={answer}  
+                            index={index} 
+                            numQuestions={numQuestions}
+                />
+                <Timer dispatch = {dispatch} secondsRemaining = {secondsRemaining}/>
+                </Footer>
+                </>         
+                )}
+                {status === 'finished' && 
+                (<>
+                <Finished  points = {points} highscore = {highscore}/>
+                <button className = 'btn btn-ui' onClick={()=>dispatch({type:'restart'})}>Restart</button>
+                </>
+                )}
             </Main>
         </div>
     )
