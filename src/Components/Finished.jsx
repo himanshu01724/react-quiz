@@ -1,6 +1,6 @@
-export default function Finished({points, highscore}){
+export default function Finished({points, highscore, candidate, totalScore}){
 
-const percentage = (points/280) * 100;
+const percentage = (points/totalScore) * 100;
 
 let emoji;
   if (percentage === 100) emoji = "🥇";
@@ -12,7 +12,7 @@ let emoji;
     return(
         <>
         <p className = 'result'>
-            <span>{emoji}</span>You scored <b>{points}</b> out of 280 ({Math.floor(percentage)}%)
+            <span>{emoji}</span>{candidate} scored <b>{points}</b> out of {totalScore} ({Math.floor(percentage)}%)
         </p>
         <p className = 'highscore'>(Highscore:{highscore})</p>
         </>
