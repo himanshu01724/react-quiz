@@ -1,10 +1,14 @@
 import React from 'react'
+import { useQuizContext } from '../QuizContext'
 
-export default function StartScreen({questions,dispatch, isSelected}){
+export default function StartScreen(){
+
+    const {numQuestions, dispatch, isSelected } = useQuizContext()
+
     return(
         <div className = "start">
             <h2>Welcome to The React Quiz!</h2>
-            <h3>{questions} <span style = {{color:'green'}}>Questions</span> to test your React Skills</h3>
+            <h3>{numQuestions} <span style = {{color:'green'}}>Questions</span> to test your React Skills</h3>
             <label>Enter you name and Proficiency to continue</label><br/>
             <span style = {{display:'flex', gap:'10px'}}>
             <input placeholder = "Himanshu" type = 'text' onChange={(e)=>dispatch({type:'name',payload:e.target.value})}></input>
